@@ -25,7 +25,10 @@ STATUS_EMOJI = {
 
 
 def wind_direction(degrees: int) -> str:
-    directions = ["N", "NO", "O", "SO", "S", "SW", "W", "NW"]
+    directions = [
+        "Nord", "Nordost", "Ost", "Südost",
+        "Süd", "Südwest", "West", "Nordwest",
+    ]
     return directions[round(degrees / 45) % 8]
 
 
@@ -52,12 +55,19 @@ def build_embed(report: WeatherReport, settings: Settings, now: datetime) -> dis
     assessment = assess(report)
     status = STATUS_EMOJI[assessment.level]
 
+    description_lines = [
+        f"**{status} {assessment.title}**",
+        f"📍 **{settings.location_name}**",
+    ]
+    if assessment.anticipatory_warning:
+        description_lines.append(
+            "⚠️ Der Status berücksichtigt bereits die erwartete Entwicklung "
+            "der nächsten 60 Minuten."
+        )
+
     embed = discord.Embed(
         title="🚁 Flug- und Wetterlage",
-        description=(
-            f"## {status} {assessment.title}\n"
-            f"📍 **{settings.location_name}**"
-        ),
+        description="\n".join(description_lines),
         color=COLORS[assessment.level],
         timestamp=now,
     )
@@ -66,9 +76,10 @@ def build_embed(report: WeatherReport, settings: Settings, now: datetime) -> dis
         name="🌡️ Aktuelle Wetterlage",
         value=(
             f"{weather_emoji(current.weather_code)} **{current.temperature:.1f} °C** "
-            f"(gefühlt {current.apparent_temperature:.1f} °C)\n"
-            f"💨 **{wind_direction(current.wind_direction)} {current.wind_speed:.0f} km/h** "
-            f"· Böen {current.wind_gusts:.0f} km/h\n"
+            f"· gefühlt {current.apparent_temperature:.1f} °C\n"
+            f"💨 **Wind aus {wind_direction(current.wind_direction)}** "
+            f"mit {current.wind_speed:.0f} km/h\n"
+            f"🌬️ **Böen bis {current.wind_gusts:.0f} km/h**\n"
             f"👁️ **{current.visibility / 1000:.1f} km** Sichtweite\n"
             f"☁️ **{current.cloud_cover} %** Bewölkung\n"
             f"🌧️ **{current.precipitation:.1f} mm** Niederschlag\n"
@@ -84,17 +95,18 @@ def build_embed(report: WeatherReport, settings: Settings, now: datetime) -> dis
     )
 
     embed.add_field(
-        name=f"{assessment.trend_icon} Wettertrend: {assessment.trend_label}",
-        value=assessment.outlook,
+        name=f"{assessment.trend_icon} Wetterentwicklung",
+        value=f"**{assessment.trend_label}**\n{assessment.outlook}",
         inline=False,
     )
 
     forecast_lines: list[str] = []
     for item in report.hourly[: settings.forecast_hours]:
         forecast_lines.append(
-            f"`{item.time:%H:%M}` {weather_emoji(item.weather_code)} "
-            f"{item.temperature:.0f} °C · 🌧️ {item.precipitation_probability}% · "
-            f"💨 {item.wind_speed:.0f}/{item.wind_gusts:.0f} km/h"
+            f"**{item.time:%H:%M} Uhr** · {weather_emoji(item.weather_code)} "
+            f"{item.temperature:.0f} °C\n"
+            f"└ 🌧️ {item.precipitation_probability}% · "
+            f"💨 {item.wind_speed:.0f} km/h · Böen {item.wind_gusts:.0f} km/h"
         )
 
     embed.add_field(
@@ -105,14 +117,17 @@ def build_embed(report: WeatherReport, settings: Settings, now: datetime) -> dis
 
     embed.add_field(
         name="🌅 Tageslicht",
-        value=f"Sonnenaufgang: **{report.sunrise:%H:%M} Uhr**\nSonnenuntergang: **{report.sunset:%H:%M} Uhr**",
+        value=(
+            f"Sonnenaufgang: **{report.sunrise:%H:%M} Uhr**\n"
+            f"Sonnenuntergang: **{report.sunset:%H:%M} Uhr**"
+        ),
         inline=False,
     )
 
     next_update = next_aligned_update(now, settings.update_minutes)
     embed.set_footer(
         text=(
-            f"AirOps RP Weather · Letzte Aktualisierung {now:%d.%m.%Y, %H:%M} Uhr "
+            f"AirOps RP Weather · Aktualisiert {now:%d.%m.%Y, %H:%M} Uhr "
             f"· Nächste Aktualisierung {next_update:%H:%M} Uhr\n"
             "Automatisierte Wetterhinweise – die Einsatzentscheidung bleibt beim Piloten."
         )

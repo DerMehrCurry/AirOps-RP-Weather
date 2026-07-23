@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from .models import AviationAssessment, FlightLevel, HourlyWeather, WeatherReport
+from datetime import timedelta
+
+from .models import AviationAssessment, FlightLevel, WeatherReport
 
 
 def _weather_has_thunderstorm(code: int) -> bool:
@@ -16,7 +18,6 @@ def _level_for_conditions(
     weather_code: int,
     cape: float = 0,
 ) -> FlightLevel:
-    # Intentionally conservative RP thresholds. They are not aviation minima.
     if (
         visibility_m < 1500
         or gusts_kmh >= 75
@@ -58,7 +59,14 @@ def assess(report: WeatherReport) -> AviationAssessment:
         weather_code=current.weather_code,
     )
 
-    future = report.hourly[:2]
+    horizon_end = current.time + timedelta(minutes=60)
+    future_window = [
+        item for item in report.hourly
+        if current.time < item.time <= horizon_end
+    ]
+    if not future_window and report.hourly:
+        future_window = [report.hourly[0]]
+
     future_levels = [
         _level_for_conditions(
             visibility_m=item.visibility,
@@ -68,61 +76,81 @@ def assess(report: WeatherReport) -> AviationAssessment:
             weather_code=item.weather_code,
             cape=item.cape,
         )
-        for item in future
+        for item in future_window
     ]
     worst_future = max(future_levels, default=current_level)
 
     reasons: list[str] = []
 
     if current.visibility < 3000:
-        reasons.append(f"Die Sichtweite ist mit etwa {current.visibility / 1000:.1f} km deutlich eingeschränkt.")
+        reasons.append(
+            f"Deutlich eingeschränkte Sichtbedingungen bei etwa "
+            f"{current.visibility / 1000:.1f} km Sichtweite."
+        )
     elif current.visibility < 7000:
-        reasons.append(f"Die Sichtweite ist mit etwa {current.visibility / 1000:.1f} km eingeschränkt.")
+        reasons.append(
+            f"Eingeschränkte Sichtbedingungen bei etwa "
+            f"{current.visibility / 1000:.1f} km Sichtweite."
+        )
     else:
-        reasons.append(f"Die Sichtweite liegt bei etwa {current.visibility / 1000:.1f} km.")
+        reasons.append(
+            f"Gute Sichtbedingungen bei etwa "
+            f"{current.visibility / 1000:.1f} km Sichtweite."
+        )
 
     if current.wind_gusts >= 55:
-        reasons.append(f"Es treten kräftige Windböen bis {current.wind_gusts:.0f} km/h auf.")
+        reasons.append(f"Hohe Windbelastung durch Böen bis {current.wind_gusts:.0f} km/h.")
     elif current.wind_gusts >= 35:
-        reasons.append(f"Windböen bis {current.wind_gusts:.0f} km/h können den Flugbetrieb beeinflussen.")
+        reasons.append(f"Erhöhte Windbelastung durch Böen bis {current.wind_gusts:.0f} km/h.")
     else:
-        reasons.append(f"Die Windbelastung ist mit Böen bis {current.wind_gusts:.0f} km/h gering.")
+        reasons.append(f"Geringe Windbelastung mit Böen bis {current.wind_gusts:.0f} km/h.")
 
     if _weather_has_thunderstorm(current.weather_code):
         reasons.append("Aktuell besteht eine Gewitterlage.")
     elif current.precipitation >= 4:
-        reasons.append("Aktuell fällt starker Niederschlag.")
+        reasons.append("Starker Niederschlag beeinträchtigt die Wetterlage.")
     elif current.precipitation >= 1:
-        reasons.append("Aktuell fällt mäßiger Niederschlag.")
+        reasons.append("Mäßiger Niederschlag kann den Flugbetrieb beeinflussen.")
     elif current.precipitation > 0:
-        reasons.append("Aktuell fällt leichter Niederschlag.")
+        reasons.append("Leichter Niederschlag ohne wesentliche Intensität.")
     else:
-        reasons.append("Aktuell fällt kein relevanter Niederschlag.")
+        reasons.append("Kein relevanter Niederschlag im aktuellen Zeitraum.")
 
-    if worst_future > current_level:
+    anticipatory_warning = worst_future > current_level
+    display_level = max(current_level, worst_future)
+
+    if anticipatory_warning:
         trend_icon = "📉"
-        trend_label = "Verschlechterung"
-        minutes = 60 if len(future_levels) > 1 and future_levels[1] == worst_future else 30
+        trend_label = "Verschlechterung erwartet"
         outlook = (
-            f"Innerhalb der nächsten {minutes} Minuten wird eine Verschlechterung "
-            f"auf **{level_title(worst_future)}** erwartet."
+            f"Innerhalb der nächsten 60 Minuten wird eine Verschlechterung auf "
+            f"**{level_title(worst_future)}** erwartet. Der angezeigte Status wurde "
+            f"vorsorglich angehoben."
         )
     elif worst_future < current_level:
         trend_icon = "📈"
-        trend_label = "Verbesserung"
-        outlook = "Innerhalb der nächsten 60 Minuten zeichnet sich eine Verbesserung der Wetterlage ab."
+        trend_label = "Verbesserung erwartet"
+        outlook = (
+            "Innerhalb der nächsten 60 Minuten zeichnet sich eine Verbesserung "
+            "der Wetterlage ab."
+        )
     else:
         trend_icon = "➡️"
-        trend_label = "Stabil"
-        outlook = "In den nächsten 60 Minuten werden keine wesentlichen Änderungen erwartet."
+        trend_label = "Stabile Entwicklung"
+        outlook = (
+            "In den nächsten 60 Minuten werden keine wesentlichen Änderungen "
+            "der Wetterlage erwartet."
+        )
 
     return AviationAssessment(
-        level=current_level,
-        title=level_title(current_level),
+        level=display_level,
+        current_level=current_level,
+        title=level_title(display_level),
         reasons=reasons,
         outlook=outlook,
         trend_label=trend_label,
         trend_icon=trend_icon,
+        anticipatory_warning=anticipatory_warning,
     )
 
 

@@ -52,8 +52,10 @@ class WeatherReport:
 @dataclass(frozen=True, slots=True)
 class AviationAssessment:
     level: FlightLevel
+    current_level: FlightLevel
     title: str
     reasons: list[str]
     outlook: str
     trend_label: str
     trend_icon: str
+    anticipatory_warning: bool
