@@ -1,95 +1,100 @@
-# AirOps RP Weather
+# 🚁 AirOps RP Weather
 
-A lightweight Discord weather bot for aviation and air-rescue roleplay. It uses real Open-Meteo data, publishes one continuously updated Discord embed, and provides detailed weather-based flight-operation notes without making the pilot's decision.
+An open-source Discord bot providing real-time aviation weather information for roleplay communities using data from Open-Meteo.
 
-> **Important:** AirOps RP Weather is intended for roleplay and simulation only. It is not an aviation weather service and must not be used for real flight planning or operational decisions.
+---
 
-## Features
+## ✨ Features
 
-- Real weather data from Open-Meteo
-- One persistent Discord embed instead of repeated messages
-- Updates at exact 10-minute clock marks
-- Green, yellow, orange and red weather status
-- Current temperature, wind, gusts, visibility, cloud cover and precipitation
-- Detailed flight-operation notes
-- 60-minute weather trend
-- Configurable hourly forecast
-- No Open-Meteo API key required
-- Designed for simple hosting platforms such as Pella
+- 🌤️ Live weather powered by Open-Meteo
+- 🚁 Flight condition assessment
+- 🟢🟡🟠🔴 Flight condition levels
+- 📈 Weather trend analysis
+- 🌅 Sunrise & Sunset
+- 💨 Wind, gusts and visibility
+- 🌧️ Precipitation information
+- 🕒 Hourly forecast
+- ♻️ Persistent Discord embed (message editing)
+- 🔄 Automatic updates every 10 minutes
+- 🔓 Open Source (MIT License)
 
-## Quick start
+---
 
-### 1. Create a Discord application
+## Screenshot
 
-1. Open the Discord Developer Portal.
-2. Create a new application and add a bot.
-3. Copy the bot token.
-4. Invite the bot with these permissions:
-   - View Channel
-   - Send Messages
-   - Embed Links
-   - Read Message History
+*A screenshot will be added here.*
 
-Do not publish or commit the bot token.
+---
 
-### 2. Configure environment variables
+## Requirements
 
-Copy `.env.example` to `.env` for local use:
+- Python 3.13+
+- Discord Bot
+- Railway (recommended)
+
+---
+
+## Installation
 
 ```bash
-cp .env.example .env
+git clone https://github.com/DerMehrCurry/AirOps-RP-Weather.git
+cd AirOps-RP-Weather
+pip install -r requirements.txt
 ```
 
-Set at least:
+Create a `.env` file:
 
 ```env
-DISCORD_TOKEN=your_token
-DISCORD_CHANNEL_ID=your_numeric_channel_id
+DISCORD_TOKEN=YOUR_TOKEN
+DISCORD_CHANNEL_ID=YOUR_CHANNEL_ID
+
+WEATHER_LOCATION_NAME=Lüneburg
+WEATHER_LATITUDE=53.2464
+WEATHER_LONGITUDE=10.4115
+WEATHER_TIMEZONE=Europe/Berlin
+
+UPDATE_MINUTES=10
+FORECAST_HOURS=6
+LOG_LEVEL=INFO
 ```
 
-To obtain the channel ID, enable Discord Developer Mode and use **Copy Channel ID**.
-
-### 3. Install and start
+## Running locally
 
 ```bash
-python -m pip install -r requirements.txt
 python main.py
 ```
 
-## Pella deployment
+## Railway
 
-1. Create a Python server in Pella.
-2. Select this GitHub repository as the code source.
-3. Add the variables from `.env.example` in Pella's environment-variable or secrets section.
-4. Use `main.py` as the start file if Pella asks for one.
-5. Start the server and inspect the console log.
+Start Command:
 
-The bot updates immediately after connecting and then at `00`, `10`, `20`, `30`, `40` and `50` minutes by default.
+```text
+python3 main.py
+```
 
-## Configuration
+Every push to the `main` branch triggers an automatic deployment.
 
-| Variable | Required | Default | Description |
-|---|---:|---|---|
-| `DISCORD_TOKEN` | Yes | — | Discord bot token |
-| `DISCORD_CHANNEL_ID` | Yes | — | Numeric target channel ID |
-| `WEATHER_LOCATION_NAME` | No | `Lüneburg` | Displayed location |
-| `WEATHER_LATITUDE` | No | `53.2464` | Weather latitude |
-| `WEATHER_LONGITUDE` | No | `10.4115` | Weather longitude |
-| `WEATHER_TIMEZONE` | No | `Europe/Berlin` | IANA timezone |
-| `UPDATE_MINUTES` | No | `10` | Update interval; must divide 60 |
-| `FORECAST_HOURS` | No | `6` | Hourly rows shown, 1–12 |
-| `LOG_LEVEL` | No | `INFO` | Logging level |
+## Flight Condition Levels
 
-## Status logic
+| Status | Meaning |
+|--------|---------|
+| 🟢 | Good flight conditions |
+| 🟡 | Restricted flight conditions |
+| 🟠 | Challenging flight conditions |
+| 🔴 | Very unfavorable flight conditions |
 
-The colored status is an automated RP-oriented summary based on visibility, sustained wind, gusts, precipitation, thunderstorm weather codes and CAPE forecast data.
+> This assessment is intended for aviation roleplay only.
 
-The included thresholds are deliberately conservative and are **not** official aviation minima. The detailed measurements remain visible so pilots can make their own RP decisions.
+## Current Version
 
-## Project status
+**v1.2.0**
 
-This repository currently contains the initial functional beta. Thresholds, presentation and forecast logic will continue to be refined before the first stable release.
+## Roadmap
+
+- v1.3 – DWD weather warnings
+- v1.4 – Multiple locations
+- v1.5 – Slash Commands
 
 ## License
 
-MIT
+MIT License
