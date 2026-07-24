@@ -1,0 +1,20 @@
+AirOps RP Weather – v1.2.1
+
+Upload these files to the repository root while preserving the folder structure:
+
+README.md
+CHANGELOG.md
+src/models.py
+src/aviation.py
+src/embed.py
+
+Recommended commit message:
+
+Release v1.2.1 embed refinements
+
+Railway start command:
+
+python3 main.py
+
+After committing to GitHub, Railway should deploy the connected branch automatically.
+If it does not, trigger a deployment of the latest GitHub commit manually.

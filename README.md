@@ -2,37 +2,25 @@
 
 An open-source Discord bot providing real-time aviation weather information for roleplay communities using data from Open-Meteo.
 
----
+## Features
 
-## ✨ Features
-
-- 🌤️ Live weather powered by Open-Meteo
-- 🚁 Flight condition assessment
-- 🟢🟡🟠🔴 Flight condition levels
-- 📈 Weather trend analysis
-- 🌅 Sunrise & Sunset
-- 💨 Wind, gusts and visibility
-- 🌧️ Precipitation information
-- 🕒 Hourly forecast
-- ♻️ Persistent Discord embed (message editing)
-- 🔄 Automatic updates every 10 minutes
-- 🔓 Open Source (MIT License)
-
----
-
-## Screenshot
-
-*A screenshot will be added here.*
-
----
+- Live weather powered by Open-Meteo
+- Aviation-oriented flight-condition assessment
+- Four status levels: green, yellow, orange and red
+- Anticipatory assessment of the next 60 minutes
+- Operational weather notes
+- Six-hour forecast
+- Sunrise and sunset
+- Persistent Discord embed
+- Automatic updates
+- Railway deployment
+- MIT License
 
 ## Requirements
 
 - Python 3.13+
-- Discord Bot
-- Railway (recommended)
-
----
+- Discord bot token
+- Discord channel ID
 
 ## Installation
 
@@ -42,59 +30,57 @@ cd AirOps-RP-Weather
 pip install -r requirements.txt
 ```
 
-Create a `.env` file:
+Create a `.env` file based on `.env.example`.
 
-```env
-DISCORD_TOKEN=YOUR_TOKEN
-DISCORD_CHANNEL_ID=YOUR_CHANNEL_ID
-
-WEATHER_LOCATION_NAME=Lüneburg
-WEATHER_LATITUDE=53.2464
-WEATHER_LONGITUDE=10.4115
-WEATHER_TIMEZONE=Europe/Berlin
-
-UPDATE_MINUTES=10
-FORECAST_HOURS=6
-LOG_LEVEL=INFO
-```
-
-## Running locally
+## Local start
 
 ```bash
 python main.py
 ```
 
-## Railway
+## Railway deployment
 
-Start Command:
+Connect the GitHub repository to a Railway service and configure the required environment variables.
+
+Use this start command:
 
 ```text
 python3 main.py
 ```
 
-Every push to the `main` branch triggers an automatic deployment.
+A push to the connected branch can trigger a new Railway deployment.
 
-## Flight Condition Levels
+## Flight-condition levels
 
 | Status | Meaning |
-|--------|---------|
-| 🟢 | Good flight conditions |
-| 🟡 | Restricted flight conditions |
-| 🟠 | Challenging flight conditions |
-| 🔴 | Very unfavorable flight conditions |
+|---|---|
+| 🟢 | Günstige Flugbedingungen |
+| 🟡 | Eingeschränkte Flugbedingungen |
+| 🟠 | Anspruchsvolle Flugbedingungen |
+| 🔴 | Sehr ungünstige Flugbedingungen |
 
-> This assessment is intended for aviation roleplay only.
+The assessment is intended exclusively for roleplay and must not be used for real-world flight planning or operational decisions.
 
-## Current Version
+## Current version
 
-**v1.2.0**
+**v1.2.1**
 
-## Roadmap
+### Changes in v1.2.1
 
-- v1.3 – DWD weather warnings
-- v1.4 – Multiple locations
-- v1.5 – Slash Commands
+- More compact status presentation
+- Written wind direction
+- Separate gust display
+- Clearer weather-development section
+- Improved mobile forecast formatting
+- Cleaner footer
+- Documentation updated for Railway
+
+## Planned
+
+- v1.3.0: DWD weather warnings
+- v1.4.0: Multiple locations
+- v1.5.0: Slash commands
 
 ## License
 
-MIT License
+This project is licensed under the MIT License.
